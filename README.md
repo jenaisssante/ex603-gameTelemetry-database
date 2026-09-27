@@ -35,8 +35,52 @@ match participants is the metric they aggregate.
 
 ## Schema
 
-Full relation schemas, domains, and primary keys are in
-[schema/schema-definition.md](schema/schema-definition.md); the constraints and
-`ON DELETE` justifications are in [schema/constraints.md](schema/constraints.md).
-The modelling justification and reflection are in
+The whole database is created by [`schema/schema.sql`](schema/schema.sql)
+(PostgreSQL 14+). It opens with a reset block, so it can be re-run on the same
+database without any manual cleanup:
+
+```
+createdb game_telemetry
+psql -d game_telemetry -v ON_ERROR_STOP=1 -f schema/schema.sql
+```
+
+### Tables
+
+| Table | Role | Key |
+|-------|------|-----|
+| `players` | Actor: a person who plays matches. | `player_id` (identity) |
+| `game_modes` | Catalog of modes. A mode can sit under a parent mode family through `parent_mode_id`. | `game_mode_id` (identity) |
+| `matches` | Producer: one game session, either live or completed. | `match_id` (identity) |
+| `match_modes` | Junction resolving matches ↔ game_modes (M:N). | (`match_id`, `game_mode_id`) |
+| `match_participants` | Event / fact table: one scored result per player per match. `score` is the metric for later units. | (`match_id`, `player_id`) |
+
+Tables are created in the order players → game_modes → matches →
+match_modes → match_participants and dropped in the reverse order.
+
+### Design decisions worth noticing
+
+- **The primary key enforces the grain.** `match_participants` is keyed on
+  (`match_id`, `player_id`), so a player can have only one result per match.
+  A retried write fails on the key instead of double-counting a score.
+- **A match owns its facts.** Deleting (voiding) a match cascades to its
+  results and mode tags. Players and game modes are reference data, and every
+  foreign key pointing at them is `RESTRICT`, so no delete can quietly rewrite
+  historical leaderboards. Account removal anonymises the player row instead.
+- **The recursive foreign key is on `game_modes`.** `parent_mode_id` groups modes
+  into families ('Ranked Solo' under 'Ranked') so mode usage can be rolled up.
+  It is `RESTRICT`, and a CHECK stops a mode from being its own parent.
+- **Match state is enforced in the schema.** A CHECK ties `is_active` to
+  `duration_sec`: a live match has no duration and a completed match must have
+  one.
+- **Every constraint is named** (`pk_`, `fk_`, `uq_`, `chk_`), so an error
+  message names the rule that was broken.
+- **No derived values are stored.** End times and aggregates are computed at
+  query time.
+
+The constraints table, the reasoning behind each `ON DELETE` choice, the CHECK
+constraints, and what changed from Unit 1 are in
+[analysis/unit2.md](analysis/unit2.md). The Unit 1 schema definition,
+constraints and modelling justification are in
+[schema/schema-definition.md](schema/schema-definition.md),
+[schema/constraints.md](schema/constraints.md) and
 [analysis/unit1.md](analysis/unit1.md).
