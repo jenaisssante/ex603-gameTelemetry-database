@@ -84,3 +84,40 @@ constraints and modelling justification are in
 [schema/schema-definition.md](schema/schema-definition.md),
 [schema/constraints.md](schema/constraints.md) and
 [analysis/unit1.md](analysis/unit1.md).
+
+## Query catalogue
+
+All queries run unedited against `ex603_data`, which is loaded from the
+provided `gaming.sql`. Every query in the files is headed by a comment naming
+the requirement it meets and the question it asks.
+
+### Unit 3 — Audit of the dashboard's failure rate
+
+| Query | Business question |
+|---|---|
+| `queries/unit3/q3_1.sql` 3.1a | Which ranked, well-populated matches feed ranked-mode rewards? |
+| 3.1b | What states can a session end in, and how often does each reason occur? |
+| 3.1c-1 / 3.1c-2 | Which long sessions were lost, and how many sessions ended in a platform-side failure? |
+| 3.1d-1 / 3.1d-2 / 3.1d-3 | Which matches match a label pattern, and how many sessions have no disconnect reason? |
+| 3.1e | What did each session earn, when was it played, and how did it end, in plain language? |
+| `queries/unit3/q3_2.sql` 3.2a | Why did the dashboard's filter silently drop 166 sessions, and what is the repaired timeout rate? |
+| 3.2b | Why does a SELECT alias fail in WHERE, and how is it rewritten? |
+| `queries/unit3/q3_3.sql` 3.3 | Which players were involved in ranked network timeouts? Written three equivalent ways, with the identity of the results proved. |
+
+### Unit 4 — The actual failure rate and who drives it
+
+| Query | Business question |
+|---|---|
+| `queries/unit4/q4_1.sql` 4.1a-1 | How many sessions, how much score and how many players does the platform have? |
+| 4.1a-2 | Why is the minimum score 0, and what does that do to the average? |
+| 4.1b | How active is each match, and how well do its players score? |
+| 4.1c-1 / 4.1c-2 | Which matches have enough sessions (15 or more) for their timeout rate to mean anything, and which were set aside? |
+| 4.1d | How do sessions, players, scores and timeouts break down by server region and match type? |
+| `queries/unit4/q4_2.sql` 4.2a | For every match, how many sessions were there and how many timed out? Both from one pass, with no WHERE. |
+| 4.2b | What are the regional subtotals and the platform grand total, without per-match detail? (ROLLUP) |
+| 4.2c-1 | What timeout and drop rate is normal for a high-volume match? (CTE pipeline) |
+| 4.2c-2 | Which high-volume matches sit at twice the baseline or more? |
+
+Write-ups: [analysis/unit3-finding.md](analysis/unit3-finding.md),
+[analysis/unit4.md](analysis/unit4.md),
+[analysis/unit4-finding.md](analysis/unit4-finding.md).
